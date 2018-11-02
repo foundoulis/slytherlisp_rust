@@ -1,0 +1,6 @@
+[package]
+name = "slytherlisp_rust"
+version = "0.1.0"
+authors = ["Derek Foundoulis <foundoulis@mymail.mines.edu>"]
+
+[dependencies]
