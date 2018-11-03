@@ -1,17 +1,19 @@
 
 pub mod types;
 
-use types::atom::*;
-use types::conscell::*;
+use types::lispvalue::*;
+use types::conslist::*;
 
 fn main() {
-    let first = ConsCell::new(
-        Atom::Operator('+'), 
-        Atom::Integer(1000)
+    let first = LispValue::ConsCell(
+        Box::new(LispValue::Symbol("+".to_string())), 
+        Box::new(LispValue::Integer(1000))
     );
-    let second = ConsCell::new(
-        Atom::Operator('+'), 
-        Atom::Integer(100)
+    let second = LispValue::ConsCell(
+        Box::new(LispValue::Symbol("+".to_string())), 
+        Box::new(LispValue::Integer(1000))
     );
-    println!("{:?}", first);
+    println!("{}", first);
+    println!("{}", first == second);
+    println!("{}", ConsList::new(&vec![LispValue::Bool(true), LispValue::Float(3.0f64)]))
 }
