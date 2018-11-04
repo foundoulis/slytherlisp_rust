@@ -1,7 +1,7 @@
 
 use std::fmt;
 
-#[derive(PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum LispValue {
     String(String),
     Symbol(String),
@@ -37,19 +37,19 @@ impl LispValue {
             },
             LispValue::ConsCell(ref car, ref cdr) => {
                 let (new_car, new_cdr) = self.print_cons(car, cdr);
-                format!("({}{})", new_car, new_cdr)
+                format!("{} {}", new_car, new_cdr)
             },
             LispValue::NIL => "NIL".to_string()
         }
     }
-    
+
     fn print_cons(&self, car: &LispValue, cdr: &LispValue) -> (String, String) {
         let car_str = car.pretty_print();
         let cdr_str = match *cdr {
             LispValue::ConsCell(ref new_car, ref new_cdr) => {
                 let (temp_car, temp_cdr) = self.print_cons(&*new_car, &*new_cdr);
                 if temp_cdr.len() == 0 {
-                    format!(" {}", temp_car)
+                    format!("{}", temp_car)
                 } else {
                     format!("{} {}", temp_car, temp_cdr)
                 }
@@ -58,6 +58,12 @@ impl LispValue {
             _ => format!(" {}", cdr)
         };
         (car_str, cdr_str)
+    }
+    pub fn as_bool(&self) -> bool {
+        match *self {
+            LispValue::NIL => false,
+            _ => true
+        }
     }
 }
 

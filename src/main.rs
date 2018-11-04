@@ -15,5 +15,9 @@ fn main() {
     );
     println!("{}", first);
     println!("{}", first == second);
-    println!("{}", ConsList::new(&vec![LispValue::Bool(true), LispValue::Float(3.0f64)]))
+    println!("{:?}", ConsList::new(&vec![
+        LispValue::Bool(true), 
+        LispValue::Float(3.0f64),
+        LispValue::Symbol("Hello World.".to_string()),
+        LispValue::String("words".to_string())]).as_list());
 }
