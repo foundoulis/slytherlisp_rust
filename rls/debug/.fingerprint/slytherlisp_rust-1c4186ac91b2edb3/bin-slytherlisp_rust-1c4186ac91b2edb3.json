@@ -1,0 +1,1 @@
+{"rustc":16349303590983159748,"features":"[]","target":7081231269664832027,"profile":3026933032369683551,"path":1036222786711178230,"deps":[["regex v1.0.5",4380238251330672632]],"local":[{"MtimeBased":[[1541375875,356935104],".fingerprint/slytherlisp_rust-1c4186ac91b2edb3/dep-bin-slytherlisp_rust-1c4186ac91b2edb3"]}],"rustflags":[],"edition":"Edition2015"}

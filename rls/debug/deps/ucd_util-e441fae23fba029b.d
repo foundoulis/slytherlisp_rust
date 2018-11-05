@@ -1,0 +1,11 @@
+/home/foundoulis/CSCI400/slytherlisp_rust/rls/debug/deps/ucd_util-e441fae23fba029b.rmeta: /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/lib.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/hangul.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/ideograph.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/name.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/property.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/unicode_tables/mod.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/unicode_tables/jamo_short_name.rs
+
+/home/foundoulis/CSCI400/slytherlisp_rust/rls/debug/deps/ucd_util-e441fae23fba029b.d: /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/lib.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/hangul.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/ideograph.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/name.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/property.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/unicode_tables/mod.rs /home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/unicode_tables/jamo_short_name.rs
+
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/lib.rs:
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/hangul.rs:
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/ideograph.rs:
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/name.rs:
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/property.rs:
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/unicode_tables/mod.rs:
+/home/foundoulis/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.2/src/unicode_tables/jamo_short_name.rs:
