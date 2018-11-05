@@ -1,5 +1,6 @@
 
 pub mod types;
+pub mod parser;
 
 use types::lispvalue::*;
 use types::conslist::*;
