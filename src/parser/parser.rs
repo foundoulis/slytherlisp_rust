@@ -2,11 +2,13 @@
 extern crate regex;
 
 use self::regex::RegexSet;
+use types::lispvalue::*;
 
 pub enum ControlToken {
     LParen,
     RParen,
-    Quote
+    Quote,
+    LispValue
 }
 
 fn lex(code: String) -> Vec<ControlToken> {
@@ -23,7 +25,28 @@ fn lex(code: String) -> Vec<ControlToken> {
         r###"[^.\s\'\"\(\);][^\s\'\"\(\);]*"###,  // 10 symbols
         r###".*"### // 11 Syntax error for anything else.
     ]).unwrap();
-    reglex.matches(&code).into_iter().collect()
+    vec![]
+}
+
+fn parse_strlit(string: &str) -> LispValue {
+    let reglex = RegexSet::new(&[
+        r###"\\0[0-7]{2}"###, // octal
+        r###"\\x[a-fA-F0-9]{2}"###, // hex
+        r###"\\0"###,
+        r###"\\a"###,
+        r###"\\b"###,
+        r###"\\e"###,
+        r###"\\f"###,
+        r###"\\n"###,
+        r###"\\r"###,
+        r###"\\t"###,
+        r###"\\v"###,
+        r###"\\""###,
+        r###"\\[^a-zA-Z]"###, // escaped character
+        r###"""###,
+        r###"."###,
+    ]).unwrap();
+    LispValue::NIL
 }
 
 fn parse(tokens: Vec<ControlToken>) -> () {
