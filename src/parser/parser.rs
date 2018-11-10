@@ -4,7 +4,7 @@ extern crate regex;
 use self::regex::RegexSet;
 use types::lispvalue::*;
 
-pub enum ControlToken {
+enum ControlToken {
     LParen,
     RParen,
     Quote,
