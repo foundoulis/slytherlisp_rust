@@ -4,28 +4,32 @@ extern crate regex;
 use self::regex::RegexSet;
 use types::lispvalue::*;
 
-enum ControlToken {
+pub enum ControlToken {
     LParen,
     RParen,
     Quote,
     LispValue
 }
 
-fn lex(code: String) -> Vec<ControlToken> {
+pub fn lex(code: &str) -> Vec<ControlToken> {
+    let mut tokens: Vec<ControlToken> = vec![];
     let reglex = RegexSet::new(&[
         r###"\("###,  // 1
         r###"\)"###,  // 2
-        r###"\'"###,  // 3 Control sequence ()'
+        r###"'"###,  // 3 Control sequence ()'
         r###"(?:-?[0-9]+[\.][0-9]*)|(?:-?[0-9]*[\.][0-9]+)"###,
         r###"-?[0-9]+"###,  // 5 Integer
         r###"\s"###, // 6 Whitespace
         r###""(?:[^"\\]|\\.)*""###,  // 7 String
         r###"^[#!].*"###,  // 8 comments
         r###";.*"###,  // 9 other comments
-        r###"[^.\s\'\"\(\);][^\s\'\"\(\);]*"###,  // 10 symbols
+        r###"[^.\s'"\(\);][^\s'"\(\);]*"###,  // 10 symbols
         r###".*"### // 11 Syntax error for anything else.
     ]).unwrap();
-    vec![]
+    for tok in reglex.matches(code) {
+        println!("{:?}", tok+1);
+    }
+    tokens
 }
 
 fn parse_strlit(string: &str) -> LispValue {
@@ -53,7 +57,7 @@ fn parse(tokens: Vec<ControlToken>) -> () {
 
 }
 
-fn lisp(code: String) -> () {
+fn lisp(code: &str) -> () {
     parse(lex(code))
 }
 
