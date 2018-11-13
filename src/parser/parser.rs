@@ -4,11 +4,12 @@ extern crate regex;
 use self::regex::RegexSet;
 use types::lispvalue::*;
 
+#[derive(Debug)]
 pub enum ControlToken {
     LParen,
     RParen,
     Quote,
-    LispValue
+    Other
 }
 
 pub fn lex(code: &str) -> Vec<ControlToken> {
@@ -26,9 +27,15 @@ pub fn lex(code: &str) -> Vec<ControlToken> {
         r###"[^.\s'"\(\);][^\s'"\(\);]*"###,  // 10 symbols
         r###".*"### // 11 Syntax error for anything else.
     ]).unwrap();
-    for tok in reglex.matches(code) {
-        println!("{:?}", tok+1);
+    for tok in reglex.captures_iter(code) {
+        println!("{}", tok);
+        tokens.push(match tok {
+            0 => ControlToken::LParen,
+            1 => ControlToken::RParen,
+            _ => ControlToken::Other
+        });
     }
+    println!("{:?}", tokens);
     tokens
 }
 

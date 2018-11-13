@@ -3,7 +3,6 @@ pub mod parser;
 pub mod types;
 
 use parser::parser::*;
-
 use types::lispvalue::*;
 use types::conslist::*;
 
@@ -22,7 +21,8 @@ fn test_type() {
         LispValue::Bool(true), 
         LispValue::Float(3.0f64),
         LispValue::Symbol("Hello World.".to_string()),
-        LispValue::String("words".to_string())]).as_list());
+        LispValue::String("words".to_string())
+    ]).as_list());
 }
 
 fn main() {
