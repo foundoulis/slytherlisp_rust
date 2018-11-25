@@ -1,45 +1,62 @@
 
 extern crate regex;
 
-use self::regex::RegexSet;
+use self::regex::Regex;
+use std::str::FromStr;
 use types::lispvalue::*;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ControlToken {
     LParen,
     RParen,
     Quote,
-    Other
+    Float(f64),
+    Int(i64),
+    String(String),
+    Symbol(String),
+    Other // Will be dropped
 }
+// impl PartialEq for ControlToken {
+//     fn eq(&self, &rhs) -> bool {
+//         match (self, rhs) {
+
+//         }
+//     }
+// }
 
 pub fn lex(code: &str) -> Vec<ControlToken> {
-    let mut tokens: Vec<ControlToken> = vec![];
-    let reglex = RegexSet::new(&[
-        r###"\("###,  // 1
-        r###"\)"###,  // 2
-        r###"'"###,  // 3 Control sequence ()'
-        r###"(?:-?[0-9]+[\.][0-9]*)|(?:-?[0-9]*[\.][0-9]+)"###,
-        r###"-?[0-9]+"###,  // 5 Integer
-        r###"\s"###, // 6 Whitespace
-        r###""(?:[^"\\]|\\.)*""###,  // 7 String
-        r###"^[#!].*"###,  // 8 comments
-        r###";.*"###,  // 9 other comments
-        r###"[^.\s'"\(\);][^\s'"\(\);]*"###,  // 10 symbols
-        r###".*"### // 11 Syntax error for anything else.
-    ]).unwrap();
-    for tok in reglex.captures_iter(code) {
-        println!("{}", tok);
-        tokens.push(match tok {
-            0 => ControlToken::LParen,
-            1 => ControlToken::RParen,
-            _ => ControlToken::Other
+    let mut raw_tokens: Vec<ControlToken> = vec![];
+    //                           1-( 2-) 3-'    4-float                                        5-int     6-whitespace 7-string    8,9-Comments  10-Symbols            11-Error
+    let regex = Regex::new(r###"(\()|(\))|(')|((?:-?[0-9]+[\.][0-9]*)|(?:-?[0-9]*[\.][0-9]+))|(-?[0-9]+)|(\s)|("(?:[^"\\]|\\.)*")|(^#!.*)|(;.*)|([^.\s'"\(\);][^\s'"\(\);]*)|(.*) # 11 Syntax error for anything else."###).unwrap();
+    // Using the regex above we are going to build a list of matches with their group, 
+    // because of the way the regex rust crate package works, this is very inefficient,
+    // however will only be run when an input is handed to the parser.
+    for cap in regex.captures_iter(code) {
+        // copied from here: https://stackoverflow.com/questions/29126533/how-to-get-the-index-of-matching-group-in-the-regex-crate
+        let index = cap.iter().enumerate() 
+            .skip(1)                  // skip the first group
+            .find(|t| t.1.is_some())  // find the first `Some`: expensive
+            .map(|t| t.0)             // extract the index
+            .unwrap_or(0);
+        raw_tokens.push(match index {
+            1 => ControlToken::LParen,
+            2 => ControlToken::RParen,
+            3 => ControlToken::Quote,
+            4 => ControlToken::Float(f64::from_str(&cap[0]).unwrap()),
+            5 => ControlToken::Int(i64::from_str(&cap[0]).unwrap()),
+            6 => ControlToken::Other,
+            7 => ControlToken::String(String::from(&cap[0])),
+            8 => ControlToken::Other,
+            9 => ControlToken::Other,
+            10 => ControlToken::Symbol(String::from(&cap[0])),
+            _ => panic!("Lexing error, unrecognized string: {}", &cap[0])
         });
     }
-    println!("{:?}", tokens);
+    let tokens = raw_tokens.into_iter().filter(|x| *x != ControlToken::Other).collect();
     tokens
 }
 
-fn parse_strlit(string: &str) -> LispValue {
+fn parse_strlit(string: String) -> LispValue {
     let reglex = RegexSet::new(&[
         r###"\\0[0-7]{2}"###, // octal
         r###"\\x[a-fA-F0-9]{2}"###, // hex

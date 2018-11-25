@@ -26,5 +26,5 @@ fn test_type() {
 }
 
 fn main() {
-    lex(r#"(print "Hello World")"#);
+    lex("(print '1.25 300 \"Hello World\") ;comment");
 }
