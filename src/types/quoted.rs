@@ -1,5 +1,6 @@
 
 use std::fmt;
+use types::lispvalue::*;
 
 #[derive(PartialEq)]
 pub struct Quoted(LispValue);
@@ -10,7 +11,7 @@ impl Quoted {
     }
 }
 impl fmt::Display for Quoted {
-    fn fmt(&self, f: &mut fmt::Formatter) fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "'{}", self.0)
     }
 }
