@@ -48,7 +48,7 @@ pub fn lex(code: &str) -> Vec<ControlToken> {
             7 => ControlToken::String(String::from(&cap[0])),
             8 => ControlToken::Other,
             9 => ControlToken::Other,
-            10 => ControlToken::Symbol(String::from(&cap[0])),
+            10 => ControlToken::Symbol(parse_strlit(String::from(&cap[0]))),
             _ => panic!("Lexing error, unrecognized string: {}", &cap[0])
         });
     }
@@ -56,25 +56,9 @@ pub fn lex(code: &str) -> Vec<ControlToken> {
     tokens
 }
 
-fn parse_strlit(string: String) -> LispValue {
-    let reglex = RegexSet::new(&[
-        r###"\\0[0-7]{2}"###, // octal
-        r###"\\x[a-fA-F0-9]{2}"###, // hex
-        r###"\\0"###,
-        r###"\\a"###,
-        r###"\\b"###,
-        r###"\\e"###,
-        r###"\\f"###,
-        r###"\\n"###,
-        r###"\\r"###,
-        r###"\\t"###,
-        r###"\\v"###,
-        r###"\\""###,
-        r###"\\[^a-zA-Z]"###, // escaped character
-        r###"""###,
-        r###"."###,
-    ]).unwrap();
-    LispValue::NIL
+fn parse_strlit(string: String) -> String {
+    // In Rust, this shit is handled automatically
+    string
 }
 
 fn parse(tokens: Vec<ControlToken>) -> () {
