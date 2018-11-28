@@ -13,19 +13,19 @@ pub enum ControlToken {
     RParen,
     Quote,
     Float(f64),
-    Int(i64),
+    Integer(i64),
     String(String),
     Symbol(String),
-    Other, // Comments and whitespace to be removed,
-    SExpr(ConsList) // For the parser
+    Other // Comments and whitespace to be removed,
 }
-// impl PartialEq for ControlToken {
-//     fn eq(&self, &rhs) -> bool {
-//         match (self, rhs) {
 
-//         }
-//     }
-// }
+#[derive(Debug)]
+pub enum ParseToken {
+    LParen, 
+    RParen,
+    SingleQuote,
+    Value(LispValue),
+}
 
 fn lex(code: &str) -> Vec<ControlToken> {
     let mut raw_tokens: Vec<ControlToken> = vec![];
@@ -46,7 +46,7 @@ fn lex(code: &str) -> Vec<ControlToken> {
             2 => ControlToken::RParen,
             3 => ControlToken::Quote,
             4 => ControlToken::Float(f64::from_str(&cap[0]).unwrap()),
-            5 => ControlToken::Int(i64::from_str(&cap[0]).unwrap()),
+            5 => ControlToken::Integer(i64::from_str(&cap[0]).unwrap()),
             6 => ControlToken::Other,
             7 => ControlToken::String(String::from(&cap[0])),
             8 => ControlToken::Other,
@@ -110,47 +110,38 @@ fn parse_strlit(string: String) -> String {
 
     // if len(stack) > 0:
     //     raise SyntaxError('incomplete parse')
-fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ControlToken>, String> {
-    let mut result: Vec<ControlToken> = Vec::new();
-    let mut stack: Vec<ControlToken> = Vec::new();
-    for item in tokens{
+fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
+    let mut parse_tokens: Vec<ParseToken> = tokens.iter().map(|t| { match t {
+        ControlToken::LParen => ParseToken::LParen,
+        ControlToken::RParen => ParseToken::RParen,
+        ControlToken::Float(f) => ParseToken::Value(LispValue::Float(*f)),
+        ControlToken::Integer(i) => ParseToken::Value(LispValue::Integer(*i)),
+        ControlToken::Quote => ParseToken::SingleQuote,
+        ControlToken::String(s) => ParseToken::Value(LispValue::String(s.to_string())),
+        ControlToken::Symbol(s) => ParseToken::Value(LispValue::Symbol(s.to_string())),
+        _ => panic!("parsing error")
+    }}).collect();
+
+    let mut stack: Vec<ParseToken> = Vec::new();
+    for elem in parse_tokens {
         let mut was_lparen = false;
-        if item == ControlToken::RParen {
-            let start = LispValue::NIL;
-            for x in stack.iter().rev() {
-                let check = x;
-                match check {
-                    ControlToken::LParen => {
-                        was_lparen = true;
-                        stack.pop();
-                        stack.append(start);
-                        break;
-                    },
-                    ControlToken::Quote => return Err(String::from("invalid quotation")),
-                    _ => start = ControlToken::SExpr(ConsList::new(check, start))
-                };
-            }
-            if !was_lparen {
-                return Err(String::from("too many closing parens"));
-            }
+
+        if elem == ParseToken::RParen {
+            let mut start = LispValue::NIL;
         } else {
-            stack.push(item);
-            if item != ControlToken::SExpr {
+            stack.push(elem);
+            if elem != ParseToken::Value() {
                 continue;
             }
         }
-        while stack.len() > 1 && stack[stack.len() - 2] != ControlToken::Quote {
-            item = stack.pop();
-            stack[stack.len()-1] = Quoted::new(item);
-        }
-        if stack.len() == 1 {
-            result.push(stack.pop());
+
+        while stack.len() > 1 && stack[stack.len()-2] == ParseToken::SingleQuote {
+            let itm = stack.pop().unwrap();
+            stack[stack.len()-1] = ParseToken::Value(Quoted::new(itm));
         }
     }
-    if stack.len() > 0 {
-        return Err(String::from("incomplete parse"));
-    }
-    Ok(result)
+
+    Ok(parse_tokens)
 }
 
 pub fn lisp(code: &str) -> () {

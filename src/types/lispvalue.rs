@@ -1,5 +1,6 @@
 
 use std::fmt;
+use types::quoted::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum LispValue {
@@ -9,6 +10,7 @@ pub enum LispValue {
     Float(f64),
     Bool(bool),
     ConsCell(Box<LispValue>, Box<LispValue>),
+    Quote(Box<Quoted>),
     // Func(Function),
     NIL
 }

@@ -2,12 +2,12 @@
 use std::fmt;
 use types::lispvalue::*;
 
-#[derive(PartialEq)]
-pub struct Quoted(LispValue);
+#[derive(Clone, Debug, PartialEq)]
+pub struct Quoted(Box<LispValue>);
 
 impl Quoted {
     pub fn new(elem: LispValue) -> Quoted {
-        Quoted(elem)
+        Quoted(Box::new(elem))
     }
 }
 impl fmt::Display for Quoted {
