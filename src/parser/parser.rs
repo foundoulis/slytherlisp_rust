@@ -120,14 +120,14 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
         _ => panic!("parsing error")
     }}).collect();
 
-    let mut stack: Vec<ParseToken> = Vec::new();
+    let mut stack: Vec<&ParseToken> = Vec::new();
     for elem in parse_tokens {
         let mut was_lparen = false;
 
         if elem == ParseToken::RParen {
             let mut start = ParseToken::Value(LispValue::NIL);
         } else {
-            stack.push(elem);
+            stack.push(&elem);
             match elem {
                 ParseToken::Value(_) => {},
                 _ => continue,
