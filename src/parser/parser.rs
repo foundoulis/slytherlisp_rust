@@ -4,8 +4,6 @@ extern crate regex;
 use self::regex::Regex;
 use std::str::FromStr;
 use types::lispvalue::*;
-use types::conslist::*;
-use types::quoted::*;
 
 #[derive(Debug, PartialEq)]
 pub enum ControlToken {
@@ -19,7 +17,7 @@ pub enum ControlToken {
     Other // Comments and whitespace to be removed,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ParseToken {
     LParen, 
     RParen,
@@ -127,17 +125,22 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
         let mut was_lparen = false;
 
         if elem == ParseToken::RParen {
-            let mut start = LispValue::NIL;
+            let mut start = ParseToken::Value(LispValue::NIL);
         } else {
             stack.push(elem);
-            if elem != ParseToken::Value() {
-                continue;
-            }
+            match elem {
+                ParseToken::Value(_) => {},
+                _ => continue,
+            };
         }
 
         while stack.len() > 1 && stack[stack.len()-2] == ParseToken::SingleQuote {
-            let itm = stack.pop().unwrap();
-            stack[stack.len()-1] = ParseToken::Value(Quoted::new(itm));
+            let mut itm = stack.pop().unwrap();
+            let new_item = match itm {
+                ParseToken::Value(v) => v,
+                _ => return Err(String::from("Unrecognized item after quote.")),
+            };
+            stack[stack.len()-1] = ParseToken::Value(LispValue::new_quoted(new_item));
         }
     }
 

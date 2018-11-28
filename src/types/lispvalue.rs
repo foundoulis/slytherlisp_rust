@@ -1,6 +1,5 @@
 
 use std::fmt;
-use types::quoted::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum LispValue {
@@ -10,7 +9,7 @@ pub enum LispValue {
     Float(f64),
     Bool(bool),
     ConsCell(Box<LispValue>, Box<LispValue>),
-    Quote(Box<Quoted>),
+    Quote(Box<LispValue>),
     // Func(Function),
     NIL
 }
@@ -24,6 +23,10 @@ impl LispValue {
         }
         let (first, new_list) = list.split_first().unwrap();
         LispValue::ConsCell(Box::new(first.clone()), Box::new(LispValue::from_iterable(&new_list.to_vec())))
+    }
+
+    pub fn new_quoted(item: LispValue) -> LispValue {
+        LispValue::Quote(Box::new(item))
     }
 
     pub fn pretty_print(&self) -> String {
@@ -41,6 +44,7 @@ impl LispValue {
                 let (new_car, new_cdr) = self.print_cons(car, cdr);
                 format!("{} {}", new_car, new_cdr)
             },
+            LispValue::Quote(ref value) => format!("'{}", value),
             LispValue::NIL => "NIL".to_string()
         }
     }
