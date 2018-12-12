@@ -25,6 +25,10 @@ impl LispValue {
         LispValue::ConsCell(Box::new(first.clone()), Box::new(LispValue::from_iterable(&new_list.to_vec())))
     }
 
+    pub fn new_sexpression(left: &LispValue, right: &LispValue) -> LispValue {
+        LispValue::ConsCell(Box::new(left.clone()), Box::new(right.clone()))
+    }
+
     pub fn new_quoted(item: LispValue) -> LispValue {
         LispValue::Quote(Box::new(item))
     }

@@ -17,7 +17,7 @@ pub enum ControlToken {
     Other // Comments and whitespace to be removed,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ParseToken {
     LParen, 
     RParen,
@@ -61,55 +61,9 @@ fn parse_strlit(string: String) -> String {
     // In Rust, this shit is handled automatically
     string
 }
-    // # tokens is our generator
-    // stack = []
-    // token_copy = tokens
-    // for elem in token_copy:
-    //     """
-    //     se = Nil
-    //     while type(stack[-1] is not LParen):
-    //         itm = stack.pop()
-    //         se = SE(itm, se)
-    //     """
-    //     was_lparen = False
 
-    //     if elem is RParen():
-    //         start = NIL
-    //         for x in reversed(stack):
-    //             check = x
-    //             if check is LParen():
-    //                 was_lparen = True
-    //                 stack.pop()
-    //                 stack.append(start)
-    //                 break
-    //             elif (isinstance(check, SExpression)
-    //                     or isinstance(check, Symbol)
-    //                     or isinstance(check, int)
-    //                     or isinstance(check, float)
-    //                     or isinstance(check, String)
-    //                     or isinstance(check, Quoted)
-    //                     or check is NIL):
-    //                 start = SExpression(check, start)
-    //                 stack.pop()
-    //             elif isinstance(check, Quote):
-    //                 raise SyntaxError("invalid quotation")
-    //         if not was_lparen:
-    //             raise SyntaxError("too many closing parens")
-
-    //     else:
-    //         stack.append(elem)
-    //         if isinstance(elem, ControlToken):
-    //             continue
-    //     while len(stack) > 1 and isinstance(stack[-2], Quote):
-    //             itm = stack.pop()
-    //             stack[-1] = Quoted(itm)
-    //     if len(stack) == 1:
-    //         yield stack.pop()
-
-    // if len(stack) > 0:
-    //     raise SyntaxError('incomplete parse')
 fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
-    let mut parse_tokens: Vec<ParseToken> = tokens.iter().map(|t| { match t {
+    let parse_tokens: Vec<ParseToken> = tokens.iter().map(|t| { match t {
         ControlToken::LParen => ParseToken::LParen,
         ControlToken::RParen => ParseToken::RParen,
         ControlToken::Float(f) => ParseToken::Value(LispValue::Float(*f)),
@@ -120,38 +74,73 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
         _ => panic!("parsing error")
     }}).collect();
 
-    let mut stack: Vec<&ParseToken> = Vec::new();
-    for elem in &mut parse_tokens {
+    let mut stack: Vec<ParseToken> = Vec::new();
+    let mut return_value: Vec<ParseToken> = Vec::new();
+
+    'main: for elem in parse_tokens {
         let mut was_lparen = false;
 
-        if *elem == ParseToken::RParen {
-            let mut start = ParseToken::Value(LispValue::NIL);
-            for x in stack.iter().rev() {
-                
-            }
-        } else {
-            match elem {
-                ParseToken::Value(_) => {
-                    stack.push(elem);
-                },
-                _ => {
-                    stack.push(elem);
-                    continue;
-                },
-            };
-        }
+        match elem {
+            ParseToken::RParen => {
+                let mut start = ParseToken::Value(LispValue::NIL);
+                // let stack_copy = stack.clone();
+                'reverse: for check in stack.iter_mut().rev() {
+                    match check {
+                        ParseToken::LParen => {
+                            was_lparen = true;
+                            stack.pop();
+                            stack.push(start);
+                            break 'reverse;
+                        },
+                        ParseToken::SingleQuote => {
+                            return Err(String::from("Invalid Quotation"));
+                        },
+                        _ => {
+                            let left: &LispValue = match check {
+                                ParseToken::Value(ref v) => v,
+                                _ => panic!("impossible")
+                            };
+                            let right: LispValue = match start {
+                                ParseToken::Value(ref v) => v.clone(),
+                                _ => panic!("impossible")
+                            };
+                            start = ParseToken::Value(LispValue::new_sexpression(left, &right));
+                        }
+                    }
+                }
+                // println!("{:?}", stack);
+                if !was_lparen {
+                    return Err(String::from("Too many closing parens"));
+                }
+            },
+            _ => {
+                stack.push(elem.clone());
+                match elem {
+                    ParseToken::Value(_) => {
 
-        while stack.len() > 1 && *stack[stack.len()-2] == ParseToken::SingleQuote {
-            let mut itm = stack.pop().unwrap();
-            let new_item = match itm {
-                ParseToken::Value(v) => v,
-                _ => return Err(String::from("Unrecognized item after quote.")),
-            };
-            stack[stack.len()-1] = &ParseToken::Value(LispValue::new_quoted(*new_item));
+                    },
+                    _ => {
+                        continue 'main;
+                    }
+                }
+            }
+        };
+
+        while stack.len() > 1 && stack[stack.len() - 2] == ParseToken::SingleQuote {
+            let itm = stack.pop(); // Remove last item
+            stack.pop(); // Remove quote
+            stack.push(itm.unwrap());
+        }
+        if stack.len() == 1 {
+            return_value.push(stack.pop().unwrap());
         }
     }
 
-    Ok(parse_tokens)
+    if stack.len() > 0 {
+        return Err(String::from("incomplete parse"));
+    }
+
+    Ok(return_value)
 }
 
 pub fn lisp(code: &str) -> () {
