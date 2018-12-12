@@ -121,26 +121,33 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
     }}).collect();
 
     let mut stack: Vec<&ParseToken> = Vec::new();
-    for elem in parse_tokens {
+    for elem in &mut parse_tokens {
         let mut was_lparen = false;
 
-        if elem == ParseToken::RParen {
+        if *elem == ParseToken::RParen {
             let mut start = ParseToken::Value(LispValue::NIL);
+            for x in stack.iter().rev() {
+                
+            }
         } else {
-            stack.push(&elem);
             match elem {
-                ParseToken::Value(_) => {},
-                _ => continue,
+                ParseToken::Value(_) => {
+                    stack.push(elem);
+                },
+                _ => {
+                    stack.push(elem);
+                    continue;
+                },
             };
         }
 
-        while stack.len() > 1 && stack[stack.len()-2] == ParseToken::SingleQuote {
+        while stack.len() > 1 && *stack[stack.len()-2] == ParseToken::SingleQuote {
             let mut itm = stack.pop().unwrap();
             let new_item = match itm {
                 ParseToken::Value(v) => v,
                 _ => return Err(String::from("Unrecognized item after quote.")),
             };
-            stack[stack.len()-1] = ParseToken::Value(LispValue::new_quoted(new_item));
+            stack[stack.len()-1] = &ParseToken::Value(LispValue::new_quoted(*new_item));
         }
     }
 
