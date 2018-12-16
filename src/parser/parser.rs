@@ -84,7 +84,8 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
             ParseToken::RParen => {
                 let mut start = ParseToken::Value(LispValue::NIL);
                 // let stack_copy = stack.clone();
-                'reverse: for check in stack.iter_mut().rev() {
+                'reverse: while stack.len() > 0 {
+                    let mut check = stack.pop().unwrap();
                     match check {
                         ParseToken::LParen => {
                             was_lparen = true;
