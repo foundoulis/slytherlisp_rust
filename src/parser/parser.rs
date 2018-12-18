@@ -75,19 +75,18 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
         _ => panic!("parsing error")
     }}).collect();
 
-
     let mut stack: Vec<ParseToken> = Vec::new();
     let mut return_value: Vec<ParseToken> = Vec::new();
 
     'main: for elem in parse_tokens {
         let mut was_lparen = false;
-        println!("{:?} - {:?}", elem, stack);
+        println!("{:?} - {:?}\n", elem, stack);
 
         match elem {
             ParseToken::RParen => {
                 let mut start = ParseToken::Value(LispValue::NIL);
                 'reverse: while stack.len() > 0 {
-                    let mut check = stack.pop().unwrap();
+                    let check = stack[stack.len() - 1].clone();
                     match check {
                         ParseToken::LParen => {
                             was_lparen = true;
@@ -104,6 +103,7 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
                                 _ => panic!("impossible")
                             };
                             start = ParseToken::Value(LispValue::new_sexpression(&v, &right));
+                            stack.pop();
                         },
                         ParseToken::RParen => {
                             // Do nothing
