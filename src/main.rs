@@ -26,9 +26,10 @@ fn test_type() {
 }
 
 fn test_parse() {
-    let code = "(print (\"\x41\") '1.25 300 \"\x53\x6c\x79\x74\x68\x65\x72\x4C\x69\x73\x70\") ;comment";
+    let code = "(token_2 (if predicate consequence alternative) (\"\x41\") ''''1.25 300 \"\x53\x6c\x79\x74\x68\x65\x72\x4C\x69\x73\x70\") ;comment";
     println!("{}", code);
-    println!("{:?}", lisp(code));
+    let ast = lisp(code);
+    println!("{:?}", &ast[0]);
 }
 
 fn main() {

@@ -54,6 +54,7 @@ fn lex(code: &str) -> Vec<ControlToken> {
         });
     }
     let tokens = raw_tokens.into_iter().filter(|x| *x != ControlToken::Other).collect();
+    // println!("{:?}", tokens);
     tokens
 }
 
@@ -74,16 +75,17 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
         _ => panic!("parsing error")
     }}).collect();
 
+
     let mut stack: Vec<ParseToken> = Vec::new();
     let mut return_value: Vec<ParseToken> = Vec::new();
 
     'main: for elem in parse_tokens {
         let mut was_lparen = false;
+        println!("{:?} - {:?}", elem, stack);
 
         match elem {
             ParseToken::RParen => {
                 let mut start = ParseToken::Value(LispValue::NIL);
-                // let stack_copy = stack.clone();
                 'reverse: while stack.len() > 0 {
                     let mut check = stack.pop().unwrap();
                     match check {
@@ -96,20 +98,18 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
                         ParseToken::SingleQuote => {
                             return Err(String::from("Invalid Quotation"));
                         },
-                        _ => {
-                            let left: &LispValue = match check {
-                                ParseToken::Value(ref v) => v,
-                                _ => panic!("impossible")
-                            };
+                        ParseToken::Value(v) => {
                             let right: LispValue = match start {
                                 ParseToken::Value(ref v) => v.clone(),
                                 _ => panic!("impossible")
                             };
-                            start = ParseToken::Value(LispValue::new_sexpression(left, &right));
+                            start = ParseToken::Value(LispValue::new_sexpression(&v, &right));
+                        },
+                        ParseToken::RParen => {
+                            // Do nothing
                         }
                     }
                 }
-                // println!("{:?}", stack);
                 if !was_lparen {
                     return Err(String::from("Too many closing parens"));
                 }
@@ -125,12 +125,15 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
                     }
                 }
             }
-        };
+        }
 
         while stack.len() > 1 && stack[stack.len() - 2] == ParseToken::SingleQuote {
             let itm = stack.pop(); // Remove last item
             stack.pop(); // Remove quote
-            stack.push(itm.unwrap());
+            stack.push(match itm.unwrap() {
+                ParseToken::Value(v) => ParseToken::Value(LispValue::new_quoted(v)),
+                _ => panic!("Oh no.")
+            });
         }
         if stack.len() == 1 {
             return_value.push(stack.pop().unwrap());
@@ -144,7 +147,11 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
     Ok(return_value)
 }
 
-pub fn lisp(code: &str) -> () {
-    println!("{:?}", parse(lex(code)).unwrap());
+pub fn lisp(code: &str) -> Vec<LispValue> {
+    let wrapped_ast: Vec<ParseToken> = parse(lex(code)).unwrap_or_else(|err| panic!("Parse Error: {}", err));
+    return wrapped_ast.into_iter().map(|value| match value {
+        ParseToken::Value(s) => s,
+        _ => panic!("What?"),
+    }).collect::<Vec<LispValue>>();
 }
 

@@ -35,7 +35,7 @@ impl LispValue {
 
     pub fn pretty_print(&self) -> String {
         match *self {
-            LispValue::String(ref value) => format!("\"{}\"", value),
+            LispValue::String(ref value) => format!("{}", value),
             LispValue::Symbol(ref value) => format!("{}", value),
             LispValue::Integer(value) => value.to_string(),
             LispValue::Float(value) => value.to_string(),
@@ -46,7 +46,7 @@ impl LispValue {
             },
             LispValue::ConsCell(ref car, ref cdr) => {
                 let (new_car, new_cdr) = self.print_cons(car, cdr);
-                format!("{} {}", new_car, new_cdr)
+                format!("({} {})", new_car, new_cdr)
             },
             LispValue::Quote(ref value) => format!("'{}", value),
             LispValue::NIL => "NIL".to_string()
@@ -69,6 +69,7 @@ impl LispValue {
         };
         (car_str, cdr_str)
     }
+    
     pub fn as_bool(&self) -> bool {
         match *self {
             LispValue::NIL => false,
