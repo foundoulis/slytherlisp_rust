@@ -1,7 +1,9 @@
 
 use std::fmt;
+use types::conslist::ConsList;
+use types::function::Function;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq, Clone)]
 pub enum LispValue {
     String(String),
     Symbol(String),
@@ -9,8 +11,10 @@ pub enum LispValue {
     Float(f64),
     Bool(bool),
     ConsCell(Box<LispValue>, Box<LispValue>),
+    List(Box<ConsList>),
     Quote(Box<LispValue>),
-    // Func(Function),
+    Function(Box<Function>),
+    // Macro(Macro),
     NIL
 }
 
@@ -28,9 +32,25 @@ impl LispValue {
     pub fn new_sexpression(left: &LispValue, right: &LispValue) -> LispValue {
         LispValue::ConsCell(Box::new(left.clone()), Box::new(right.clone()))
     }
+    pub fn get_values(cell: LispValue) -> Result<(LispValue, LispValue), String> {
+        match cell {
+            LispValue::ConsCell(left, right) => {
+                Ok((*left, *right))
+            },
+            _ => Err(String::from("Not a cons cell"))
+        }
+    }
 
     pub fn new_quoted(item: LispValue) -> LispValue {
         LispValue::Quote(Box::new(item))
+    }
+    pub fn get_quoted(item: LispValue) -> Result<LispValue, String> {
+        match item {
+            LispValue::Quote(item) => {
+                Ok(*item)
+            },
+            _ => Err(String::from("Not a quoted value"))
+        }
     }
 
     pub fn pretty_print(&self) -> String {
@@ -49,6 +69,8 @@ impl LispValue {
                 format!("({} {})", new_car, new_cdr)
             },
             LispValue::Quote(ref value) => format!("'{}", value),
+            LispValue::List(ref list) => format!("{}", list),
+            LispValue::Function(ref func) => format!("{}", func),
             LispValue::NIL => "NIL".to_string()
         }
     }
@@ -79,6 +101,11 @@ impl LispValue {
 }
 
 impl fmt::Display for LispValue {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.pretty_print())
+    }
+}
+impl fmt::Debug for LispValue {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.pretty_print())
     }

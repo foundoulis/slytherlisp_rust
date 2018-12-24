@@ -4,6 +4,7 @@ use std::ops::Index;
 
 use types::lispvalue::LispValue;
 
+#[derive(Clone, PartialEq)]
 pub struct ConsList(LispValue, usize);
 
 impl ConsList {
@@ -23,7 +24,6 @@ impl ConsList {
                 _ => break,
             };
         }
-        
         new_vec.pop(); // Needs to happen, don't know why.
         new_vec
     }
@@ -58,6 +58,11 @@ impl Index<usize> for ConsList {
     }
 }
 impl fmt::Display for ConsList {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(list {})", self.0)
+    }
+}
+impl fmt::Debug for ConsList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "(list {})", self.0)
     }

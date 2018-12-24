@@ -1,6 +1,5 @@
 
 use std::collections::HashMap;
-
 use types::lispvalue::LispValue;
 
 #[derive(Debug)]
@@ -14,6 +13,15 @@ impl LexicalVarStorage {
             environ: environ,
             local: HashMap::new()
         }
+    }
+    fn new_blank() -> LexicalVarStorage {
+        LexicalVarStorage {
+            environ: HashMap::new(),
+            local: HashMap::new()
+        }
+    }
+    pub fn initialize() -> LexicalVarStorage {
+        LexicalVarStorage::new_blank()
     }
     pub fn fork(&self) -> HashMap<String, LispValue> {
         let mut new_map: HashMap<String, LispValue> = HashMap::new();
@@ -33,5 +41,8 @@ impl LexicalVarStorage {
         } else {
             return Err(format!("Undefined variable '{}'", key));
         }
+    }
+    pub fn set(&mut self, key: String, value: LispValue) {
+        self.local.insert(key, value);
     }
 }

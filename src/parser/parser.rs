@@ -54,13 +54,12 @@ fn lex(code: &str) -> Vec<ControlToken> {
         });
     }
     let tokens = raw_tokens.into_iter().filter(|x| *x != ControlToken::Other).collect();
-    // println!("{:?}", tokens);
     tokens
 }
 
 fn parse_strlit(string: String) -> String {
     // In Rust, this shit is handled automatically
-    string
+    String::from(string)
 }
 
 fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
@@ -74,14 +73,10 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
         ControlToken::Symbol(s) => ParseToken::Value(LispValue::Symbol(s.to_string())),
         _ => panic!("parsing error")
     }}).collect();
-
     let mut stack: Vec<ParseToken> = Vec::new();
     let mut return_value: Vec<ParseToken> = Vec::new();
-
     'main: for elem in parse_tokens {
         let mut was_lparen = false;
-        println!("{:?} - {:?}\n", elem, stack);
-
         match elem {
             ParseToken::RParen => {
                 let mut start = ParseToken::Value(LispValue::NIL);
@@ -118,7 +113,7 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
                 stack.push(elem.clone());
                 match elem {
                     ParseToken::Value(_) => {
-
+                        // Do nothing
                     },
                     _ => {
                         continue 'main;
@@ -126,7 +121,6 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
                 }
             }
         }
-
         while stack.len() > 1 && stack[stack.len() - 2] == ParseToken::SingleQuote {
             let itm = stack.pop(); // Remove last item
             stack.pop(); // Remove quote
@@ -139,7 +133,6 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
             return_value.push(stack.pop().unwrap());
         }
     }
-
     if stack.len() > 0 {
         return Err(String::from("incomplete parse"));
     }
@@ -148,7 +141,7 @@ fn parse(tokens: Vec<ControlToken>) -> Result<Vec<ParseToken>, String> {
 }
 
 pub fn lisp(code: &str) -> Vec<LispValue> {
-    let wrapped_ast: Vec<ParseToken> = parse(lex(code)).unwrap_or_else(|err| panic!("Parse Error: {}", err));
+    let wrapped_ast: Vec<ParseToken> = parse(lex(code)).unwrap_or_else(|text| panic!("Parse Error: {}", text));
     return wrapped_ast.into_iter().map(|value| match value {
         ParseToken::Value(s) => s,
         _ => panic!("What?"),
