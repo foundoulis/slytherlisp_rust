@@ -20,7 +20,7 @@ impl Interpreter {
     pub fn exec(&mut self, code: String) -> LispValue {
         let mut r = LispValue::NIL;
         for expr in lisp(&code) {
-            r = self.eval(expr)
+            r = self.eval(expr);
         }
         r
     }

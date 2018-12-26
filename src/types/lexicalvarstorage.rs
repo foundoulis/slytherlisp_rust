@@ -21,7 +21,9 @@ impl LexicalVarStorage {
         }
     }
     pub fn initialize() -> LexicalVarStorage {
-        LexicalVarStorage::new_blank()
+        let mut stg = LexicalVarStorage::new_blank()
+
+        stg
     }
     pub fn fork(&self) -> HashMap<String, LispValue> {
         let mut new_map: HashMap<String, LispValue> = HashMap::new();
