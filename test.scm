@@ -1,3 +1,9 @@
+
+(print "Hello")
+(+ 10 11)
+(- 10 11)
+(print (* 100 (/ 1 3)))
+
 (token_2 
     ("another string" 350) 
     (if predicate consequence alternative) 

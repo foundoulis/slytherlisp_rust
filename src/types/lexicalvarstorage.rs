@@ -1,6 +1,7 @@
 
 use std::collections::HashMap;
 use types::lispvalue::LispValue;
+use types::callable::Builtin;
 
 #[derive(Debug)]
 pub struct LexicalVarStorage {
@@ -21,8 +22,21 @@ impl LexicalVarStorage {
         }
     }
     pub fn initialize() -> LexicalVarStorage {
-        let mut stg = LexicalVarStorage::new_blank()
-
+        let default_functions = vec![
+            (String::from("NIL"), LispValue::NIL),
+            (String::from("nil"), LispValue::NIL),
+            (String::from("#t"), LispValue::Bool(true)),
+            (String::from("#f"), LispValue::Bool(false)),
+            (String::from("+"), LispValue::Builtin(Box::new(Builtin::new("+")))),
+            (String::from("-"), LispValue::Builtin(Box::new(Builtin::new("-")))),
+            (String::from("*"), LispValue::Builtin(Box::new(Builtin::new("*")))),
+            (String::from("/"), LispValue::Builtin(Box::new(Builtin::new("/")))),
+            (String::from("print"), LispValue::Builtin(Box::new(Builtin::new("print"))))
+        ];
+        let mut stg = LexicalVarStorage::new_blank();
+        for (key, value) in default_functions {
+            stg.set(key, value);
+        }
         stg
     }
     pub fn fork(&self) -> HashMap<String, LispValue> {

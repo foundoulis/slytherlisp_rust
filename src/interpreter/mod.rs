@@ -15,7 +15,7 @@ impl Interpreter {
         }
     }
     pub fn eval(&mut self, expr: LispValue) -> LispValue {
-        lisp_eval(&expr, &mut self.stg)
+        lisp_eval(expr, &mut self.stg)
     }
     pub fn exec(&mut self, code: String) -> LispValue {
         let mut r = LispValue::NIL;

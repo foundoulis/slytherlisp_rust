@@ -1,7 +1,7 @@
 
 use std::fmt;
-use types::conslist::ConsList;
-use types::function::Function;
+use types::callable::Function;
+use types::callable::Builtin;
 
 #[derive(PartialEq, Clone)]
 pub enum LispValue {
@@ -11,10 +11,9 @@ pub enum LispValue {
     Float(f64),
     Bool(bool),
     ConsCell(Box<LispValue>, Box<LispValue>),
-    List(Box<ConsList>),
     Quote(Box<LispValue>),
+    Builtin(Box<Builtin>),
     Function(Box<Function>),
-    // Macro(Macro),
     NIL
 }
 
@@ -69,8 +68,8 @@ impl LispValue {
                 format!("({} {})", new_car, new_cdr)
             },
             LispValue::Quote(ref value) => format!("'{}", value),
-            LispValue::List(ref list) => format!("{}", list),
             LispValue::Function(ref func) => format!("{}", func),
+            LispValue::Builtin(ref func) => format!("{:?}", func),
             LispValue::NIL => "NIL".to_string()
         }
     }
@@ -98,6 +97,21 @@ impl LispValue {
             _ => true
         }
     }
+    pub fn as_list(&self) -> Vec<&LispValue> {
+        match *self {
+            LispValue::ConsCell(ref left, ref right) => {
+                let mut list = right.as_list();
+                list.push(left);
+                list.reverse();
+
+                list
+            },
+            LispValue::NIL => {
+                vec![]
+            },
+            _ => vec![]
+        }
+    }
 }
 
 impl fmt::Display for LispValue {
@@ -110,3 +124,20 @@ impl fmt::Debug for LispValue {
         write!(f, "{}", self.pretty_print())
     }
 }
+
+// use std::iter::Iterator;
+// impl Iterator for LispValue {
+//     type Item = LispValue;
+//     fn next(&mut self) -> Option<LispValue> {
+//         match *self {
+//             LispValue::ConsCell(ref mut left, ref mut right) => {
+//                 *self = **right;
+//                 Some(**left)
+//             },
+//             LispValue::NIL => {
+//                 None
+//             },
+//             _ => None,
+//         }
+//     }
+// }
