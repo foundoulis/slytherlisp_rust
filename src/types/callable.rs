@@ -1,11 +1,11 @@
-
+use evaluator::lisp_eval;
 use std::collections::HashMap;
 use std::fmt;
+use types::lexicalvarstorage::LexicalVarStorage;
 use types::lispvalue::LispValue;
 
-
 pub trait Callable {
-    fn call(&mut self, args: &LispValue) -> LispValue;
+    fn call(&mut self, args: &LispValue, stg: &mut LexicalVarStorage) -> LispValue;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,7 +14,23 @@ pub enum Builtin {
     sub,
     mul,
     div,
-    print
+
+    print,
+
+    // and,
+    // or,
+    // not,
+
+    // iff,
+
+    // car,
+    // cdr,
+
+    // eq,
+    // lt,
+    // gt,
+    // lte,
+    // gte,
 }
 impl Builtin {
     pub fn new(func: &str) -> Builtin {
@@ -29,7 +45,7 @@ impl Builtin {
     }
 }
 impl Callable for Builtin {
-    fn call(&mut self, args: &LispValue) -> LispValue {
+    fn call(&mut self, args: &LispValue, stg: &mut LexicalVarStorage) -> LispValue {
         let args_as_list: Vec<&LispValue> = args.as_list();
         match *self {
             Builtin::add => {
@@ -45,58 +61,54 @@ impl Callable for Builtin {
                 if int_sum == 0 {
                     LispValue::Float(float_sum)
                 } else if float_sum == 0.0 {
-                    LispValue::Integer(int_sum) 
+                    LispValue::Integer(int_sum)
                 } else {
                     LispValue::Float(float_sum + (int_sum as f64))
                 }
-            },
-            Builtin::sub => {
-                match args_as_list.len() {
-                    0 => LispValue::Integer(1),
-                    1 => {
-                        match *args_as_list[0] {
-                            LispValue::Integer(i) => LispValue::Integer((-1)*(i)),
-                            LispValue::Float(f) => LispValue::Float((-1.0)*(f)),
-                            _ => panic!("Cannot negate type: {}", *args_as_list[0]),
-                        }
-                    },
-                    _ => {
-                        let mut is_int = match *args_as_list[0] {
-                            LispValue::Integer(_) => true,
-                            LispValue::Float(_) => false,
-                            _ => panic!("Cannot subtract from: {}", *args_as_list[0]),
+            }
+            Builtin::sub => match args_as_list.len() {
+                0 => LispValue::Integer(1),
+                1 => match *args_as_list[0] {
+                    LispValue::Integer(i) => LispValue::Integer((-1) * (i)),
+                    LispValue::Float(f) => LispValue::Float((-1.0) * (f)),
+                    _ => panic!("Cannot negate type: {}", *args_as_list[0]),
+                },
+                _ => {
+                    let mut is_int = match *args_as_list[0] {
+                        LispValue::Integer(_) => true,
+                        LispValue::Float(_) => false,
+                        _ => panic!("Cannot subtract from: {}", *args_as_list[0]),
+                    };
+                    if is_int {
+                        let start = match *args_as_list[0] {
+                            LispValue::Integer(i) => i,
+                            _ => panic!("impossible"),
                         };
-                        if is_int {
-                            let start = match *args_as_list[0] {
+                        let mut total = 0i64;
+                        for index in 1..args_as_list.len() {
+                            let value = match *args_as_list[index] {
                                 LispValue::Integer(i) => i,
-                                _ => panic!("impossible"),
+                                LispValue::Float(f) => f as i64,
+                                _ => panic!("Cannot subtract from: {}", *args_as_list[index]),
                             };
-                            let mut total = 0i64;
-                            for index in 1..args_as_list.len() {
-                                let value = match *args_as_list[index] {
-                                    LispValue::Integer(i) => i,
-                                    LispValue::Float(f) => f as i64,
-                                    _ => panic!("Cannot subtract from: {}", *args_as_list[index])
-                                };
-                                total += value as i64;
-                            }
-                            LispValue::Integer(start - total)
-                        } else {
-                            let start = match *args_as_list[0] {
-                                LispValue::Float(f) => f, 
-                                _ => panic!("impossible"),
-                            };
-                            let mut total = 0f64;
-                            for index in 1..args_as_list.len() {
-                                let value = match *args_as_list[index] {
-                                    LispValue::Float(f) => f,
-                                    LispValue::Integer(i) => i as f64,
-                                    _ => panic!("Cannot subtract from: {}"),
-                                };
-                                total += value as f64;
-                            }
-                            LispValue::Float(start - total)
+                            total += value as i64;
                         }
+                        LispValue::Integer(start - total)
+                    } else {
+                        let start = match *args_as_list[0] {
+                            LispValue::Float(f) => f,
+                            _ => panic!("impossible"),
+                        };
+                        let mut total = 0f64;
+                        for index in 1..args_as_list.len() {
+                            let value = match *args_as_list[index] {
+                                LispValue::Float(f) => f,
+                                LispValue::Integer(i) => i as f64,
+                                _ => panic!("Cannot subtract from: {}"),
+                            };
+                            total += value as f64;
+                        }
+                        LispValue::Float(start - total)
                     }
                 }
             },
@@ -104,6 +116,7 @@ impl Callable for Builtin {
                 let mut int_prod = 1i64;
                 let mut float_prod = 1f64;
                 for item in args_as_list {
+                    let item = &lisp_eval(item.clone(), stg);
                     match *item {
                         LispValue::Integer(i) => int_prod *= i,
                         LispValue::Float(f) => float_prod *= f,
@@ -117,36 +130,33 @@ impl Callable for Builtin {
                 } else {
                     LispValue::Float(float_prod * (int_prod as f64))
                 }
-            },
-            Builtin::div => {
-                match args_as_list.len() {
-                    0 => LispValue::Integer(1),
-                    1 => {
-                        match *args_as_list[0] {
-                            LispValue::Float(f) => LispValue::Float(1f64/f),
-                            LispValue::Integer(i) => LispValue::Float(1f64/(i as f64)),
-                            _ => panic!("Cannot divide type: {}", *args_as_list[0]),
-                        }
-                    },
-                    _ => {
-                        let floats: Vec<f64> = args_as_list.iter().map(|item| {
-                            match *item {
-                                LispValue::Integer(i) => *i as f64,
-                                LispValue::Float(f) => *f,
-                                _ => panic!("Cannot divide type: {}", *item),
-                            }
-                        }).collect();
-                        let mut start = floats[0];
-                        for index in 1..floats.len() {
-                            start /= floats[index];
-                        }
-                        LispValue::Float(start)
+            }
+            Builtin::div => match args_as_list.len() {
+                0 => LispValue::Integer(1),
+                1 => match *args_as_list[0] {
+                    LispValue::Float(f) => LispValue::Float(1f64 / f),
+                    LispValue::Integer(i) => LispValue::Float(1f64 / (i as f64)),
+                    _ => panic!("Cannot divide type: {}", *args_as_list[0]),
+                },
+                _ => {
+                    let floats: Vec<f64> = args_as_list
+                        .iter()
+                        .map(|item| match *item {
+                            LispValue::Integer(i) => *i as f64,
+                            LispValue::Float(f) => *f,
+                            _ => panic!("Cannot divide type: {}", *item),
+                        })
+                        .collect();
+                    let mut start = floats[0];
+                    for index in 1..floats.len() {
+                        start /= floats[index];
                     }
+                    LispValue::Float(start)
                 }
             },
             Builtin::print => {
                 for thing in args_as_list {
-                    println!("std out: {}", thing);
+                    println!("{}", lisp_eval(thing.clone(), stg));
                 }
                 LispValue::NIL
             }
@@ -158,17 +168,19 @@ impl Callable for Builtin {
 pub struct Function {
     params: LispValue,
     body: LispValue,
-    environ: HashMap<String, LispValue>
+    environ: HashMap<String, LispValue>,
 }
 
 impl Function {
-    pub fn new(params: LispValue, 
-                body: LispValue, 
-                environ: HashMap<String, LispValue>) -> Function {
+    pub fn new(
+        params: LispValue,
+        body: LispValue,
+        environ: HashMap<String, LispValue>,
+    ) -> Function {
         Function {
             params: params,
             body: body,
-            environ: environ
+            environ: environ,
         }
     }
     pub fn as_lambda(&self) -> String {
@@ -177,8 +189,18 @@ impl Function {
 }
 
 impl Callable for Function {
-    fn call(&mut self, args: &LispValue) -> LispValue {
-        LispValue::NIL
+    fn call(&mut self, args: &LispValue, stg: &mut LexicalVarStorage) -> LispValue {
+        let args_as_list: Vec<&LispValue> = args.as_list();
+        let mut combined_environment = LexicalVarStorage::new(self.environ.clone());
+        for (index, elem) in self.params.as_list().iter().enumerate() {
+            combined_environment.set(format!("{}", elem), args_as_list[index].clone());
+        }
+        let mut ret = LispValue::NIL;
+        for i in self.body.as_list() {
+            ret = lisp_eval(i.clone(), &mut combined_environment);
+        }
+
+        ret
     }
 }
 
@@ -187,4 +209,3 @@ impl fmt::Display for Function {
         write!(f, "{}", self.as_lambda())
     }
 }
-

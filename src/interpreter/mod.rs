@@ -1,4 +1,3 @@
-
 use evaluator::*;
 use parser::parser::lisp;
 use types::lexicalvarstorage::*;
@@ -6,12 +5,12 @@ use types::lispvalue::*;
 
 #[derive(Debug)]
 pub struct Interpreter {
-    stg: LexicalVarStorage
+    stg: LexicalVarStorage,
 }
 impl Interpreter {
     pub fn interpreter() -> Interpreter {
         Interpreter {
-            stg: LexicalVarStorage::initialize()
+            stg: LexicalVarStorage::initialize(),
         }
     }
     pub fn eval(&mut self, expr: LispValue) -> LispValue {

@@ -1,4 +1,3 @@
-
 pub mod evaluator;
 pub mod interpreter;
 pub mod parser;
@@ -14,12 +13,12 @@ use std::{
 };
 
 fn lines_from_file<P>(filename: P) -> String
-where P: AsRef<Path>,
+where
+    P: AsRef<Path>,
 {
     let file = File::open(filename).expect("no such file");
     let buf = BufReader::new(file);
-    String::from_iter(buf.lines()
-        .map(|l| l.expect("Could not parse line")))
+    String::from_iter(buf.lines().map(|l| l.expect("Could not parse line")))
 }
 
 fn run_file() {
@@ -31,9 +30,7 @@ fn run_file() {
     interpreter.exec(prog);
 }
 
-fn run_repl() {
-    
-}
+fn run_repl() {}
 
 fn main() {
     run_file();

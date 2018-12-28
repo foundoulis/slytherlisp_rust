@@ -1,24 +1,23 @@
-
 use std::collections::HashMap;
-use types::lispvalue::LispValue;
 use types::callable::Builtin;
+use types::lispvalue::LispValue;
 
 #[derive(Debug)]
 pub struct LexicalVarStorage {
     environ: HashMap<String, LispValue>,
-    local: HashMap<String, LispValue>
+    local: HashMap<String, LispValue>,
 }
 impl LexicalVarStorage {
     pub fn new(environ: HashMap<String, LispValue>) -> LexicalVarStorage {
         LexicalVarStorage {
             environ: environ,
-            local: HashMap::new()
+            local: HashMap::new(),
         }
     }
     fn new_blank() -> LexicalVarStorage {
         LexicalVarStorage {
             environ: HashMap::new(),
-            local: HashMap::new()
+            local: HashMap::new(),
         }
     }
     pub fn initialize() -> LexicalVarStorage {
@@ -27,11 +26,26 @@ impl LexicalVarStorage {
             (String::from("nil"), LispValue::NIL),
             (String::from("#t"), LispValue::Bool(true)),
             (String::from("#f"), LispValue::Bool(false)),
-            (String::from("+"), LispValue::Builtin(Box::new(Builtin::new("+")))),
-            (String::from("-"), LispValue::Builtin(Box::new(Builtin::new("-")))),
-            (String::from("*"), LispValue::Builtin(Box::new(Builtin::new("*")))),
-            (String::from("/"), LispValue::Builtin(Box::new(Builtin::new("/")))),
-            (String::from("print"), LispValue::Builtin(Box::new(Builtin::new("print"))))
+            (
+                String::from("+"),
+                LispValue::Builtin(Box::new(Builtin::new("+"))),
+            ),
+            (
+                String::from("-"),
+                LispValue::Builtin(Box::new(Builtin::new("-"))),
+            ),
+            (
+                String::from("*"),
+                LispValue::Builtin(Box::new(Builtin::new("*"))),
+            ),
+            (
+                String::from("/"),
+                LispValue::Builtin(Box::new(Builtin::new("/"))),
+            ),
+            (
+                String::from("print"),
+                LispValue::Builtin(Box::new(Builtin::new("print"))),
+            ),
         ];
         let mut stg = LexicalVarStorage::new_blank();
         for (key, value) in default_functions {
